@@ -16,7 +16,7 @@ fi
 if [ "$LATEST_TAG" = "NONE" ]; then
     echo "No previous tag found. Analyzing all commits..." >&2
     COMMITS=$(git log HEAD --format="%s" -- "$PATH_FILTER")
-elif git rev-parse --verify "$LATEST_TAG" >/dev/null 2>&1; then
+elif git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
     echo "Analyzing commits since $LATEST_TAG..." >&2
     COMMITS=$(git log "$LATEST_TAG"..HEAD --format="%s" -- "$PATH_FILTER")
 else
@@ -29,18 +29,18 @@ FIXES=0
 BREAKING=0
 
 while IFS= read -r COMMIT; do
-    [ -z "$COMMIT" ] && continue
-
-    if [[ "$COMMIT" =~ ^(feat|feature)(\([^)]+\))?!: ]]; then
+    if [[ "$COMMIT" =~ ^feat!: ]]; then
         BREAKING=$((BREAKING + 1))
-    elif [[ "$COMMIT" =~ ^(feat|feature)(\([^)]+\))?: ]]; then
+    elif [[ "$COMMIT" =~ ^feat: ]]; then
         FEATURES=$((FEATURES + 1))
-    elif [[ "$COMMIT" =~ ^(fix|bugfix)(\([^)]+\))?: ]]; then
+    elif [[ "$COMMIT" =~ ^fix: ]]; then
         FIXES=$((FIXES + 1))
     fi
+
 done <<< "$COMMITS"
 
 echo "" >&2
+
 echo "Release analysis:" >&2
 echo "Features: $FEATURES" >&2
 echo "Fixes: $FIXES" >&2
