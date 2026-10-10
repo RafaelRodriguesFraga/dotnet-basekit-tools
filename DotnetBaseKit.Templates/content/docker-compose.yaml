@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+#if (database == "sql")
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: example_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+#elif (database == "postgresql")
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: example_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+#elif (database == "mongodb")
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+#endif
+
+volumes:
+#if (database == "sql")
+  mysql_data:
+#elif (database == "postgresql")
+  postgres_data:
+#elif (database == "mongodb")
+  mongo_data:
+#endif

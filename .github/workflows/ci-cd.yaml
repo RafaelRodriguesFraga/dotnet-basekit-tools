@@ -1,0 +1,154 @@
+name: CI/CD for DotnetBaseKit Tools
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build:
+    name: 1. Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+  test:
+    name: 2. Test
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+
+  detect-changes:
+    name: 3. Detect changed packages
+    needs: test
+    runs-on: ubuntu-latest
+
+    outputs:
+      projects: ${{ steps.projects.outputs.projects }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed projects
+        id: projects
+        run: |
+          chmod +x ./scripts/*.sh
+
+          JSON=$(./scripts/detect-changed-projects.sh \
+            "${{ github.event.before }}" \
+            "${{ github.sha }}")
+
+          echo "Changed projects: $JSON"
+          echo "projects=$JSON" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: 4. Release package (${{ matrix.project }})
+    needs: detect-changes
+
+    if: needs.detect-changes.outputs.projects != '[]' && needs.detect-changes.outputs.projects != ''
+
+    runs-on: ubuntu-latest
+
+    environment: Production
+
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.detect-changes.outputs.projects) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Nuget Login
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+         user: rafaelfraga
+
+      - name: Process Version and Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+
+        run: |
+          chmod +x ./scripts/*.sh
+
+          PROJECT="${{ matrix.project }}"
+          PATH_FILTER="${PROJECT}/"
+
+          echo "========================================"
+          echo "Processing project: $PROJECT"
+          echo "========================================"
+
+          LATEST_TAG=$(./scripts/process-release.sh get-latest-tag "$PROJECT")
+          echo "Latest tag: $LATEST_TAG"
+
+          TYPE=$(./scripts/analyze-commits.sh \
+            "$LATEST_TAG" \
+            "$PATH_FILTER")
+
+          echo "Change type: $TYPE"
+
+          NEXT_VERSION=$(./scripts/process-release.sh \
+            calculate-version \
+            "$PROJECT" \
+            "$LATEST_TAG" \
+            "$TYPE")
+
+          echo "Next version: $NEXT_VERSION"
+
+          ./scripts/process-release.sh \
+            publish \
+            "$PROJECT" \
+            "$NEXT_VERSION" \
+            "$NUGET_API_KEY"
+
+          ./scripts/process-release.sh \
+            tag-and-release \
+            "$PROJECT" \
+            "$NEXT_VERSION" \
+            "$LATEST_TAG"

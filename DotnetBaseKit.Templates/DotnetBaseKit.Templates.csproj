@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>DotnetBaseKit.Templates</PackageId>
+    <Title>DotnetBaseKit Solution Template</Title>
+    <Authors>Rafael Fraga</Authors>
+    <Description>Architecture solution template for the DotnetBaseKit ecosystem.</Description>
+    <PackageTags>dotnet-template;architecture;ddd;clean-architecture;dotnetbasekit</PackageTags>
+    <TargetFramework>net8.0</TargetFramework>
+    <Version>1.0.0</Version>
+
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    
+    <!-- Desativa a compilação do projeto de template em si -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Inclui a pasta .template.config e todo o conteúdo bruto sem compilar nada -->
+    <Content Include=".template.config\**\*" Pack="true" PackagePath="content\.template.config" />
+    <Content Include="content\**\*" Pack="true" PackagePath="content" Exclude="content\**\bin\**;content\**\obj\**;content\**\.vs\**;content\**\.idea\**" />
+  </ItemGroup>
+
+</Project>

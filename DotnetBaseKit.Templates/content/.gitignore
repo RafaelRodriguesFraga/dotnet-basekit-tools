@@ -1,0 +1,17 @@
+﻿.idea/.idea.DotnetBaseKit/.idea/.gitignore
+.idea/.idea.DotnetBaseKit/.idea/encodings.xml
+.idea/.idea.DotnetBaseKit/.idea/indexLayout.xml
+DotnetBaseKit.Api/bin/
+DotnetBaseKit.Api/obj/
+DotnetBaseKit.Application/bin/
+DotnetBaseKit.Application/obj/
+DotnetBaseKit.Domain/bin/
+DotnetBaseKit.Domain/obj/
+DotnetBaseKit.Infra/bin/
+DotnetBaseKit.Infra/obj/
+DotnetBaseKit.Infra.CrossCutting/bin/
+DotnetBaseKit.Infra.CrossCutting/obj/
+DotnetBaseKit.Shared/bin/
+DotnetBaseKit.Shared/obj/
+DotnetBaseKit.Tests/bin/
+DotnetBaseKit.Tests/obj/
