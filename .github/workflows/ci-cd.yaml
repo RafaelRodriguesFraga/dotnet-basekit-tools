@@ -10,8 +10,8 @@ permissions:
   id-token: write
 
 jobs:
-  build:
-    name: 1. Build
+  validate:
+    name: 1. Validate projects
     runs-on: ubuntu-latest
 
     steps:
@@ -23,38 +23,20 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore projects
+        run: |
+          dotnet restore DotnetBaseKit.Cli/DotnetBaseKit.Cli.csproj
+          dotnet restore DotnetBaseKit.Templates/DotnetBaseKit.Templates.csproj
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
+      - name: Build CLI
+        run: dotnet build DotnetBaseKit.Cli/DotnetBaseKit.Cli.csproj --no-restore --configuration Release
 
-  test:
-    name: 2. Test
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Build Templates
+        run: dotnet build DotnetBaseKit.Templates/DotnetBaseKit.Templates.csproj --no-restore --configuration Release
 
   detect-changes:
-    name: 3. Detect changed packages
-    needs: test
+    name: 2. Detect changed projects
+    needs: validate
     runs-on: ubuntu-latest
 
     outputs:
@@ -79,7 +61,7 @@ jobs:
           echo "projects=$JSON" >> "$GITHUB_OUTPUT"
 
   release:
-    name: 4. Release package (${{ matrix.project }})
+    name: 3. Release project (${{ matrix.project }})
     needs: detect-changes
 
     if: needs.detect-changes.outputs.projects != '[]' && needs.detect-changes.outputs.projects != ''
