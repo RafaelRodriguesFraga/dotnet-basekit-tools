@@ -1,16 +1,66 @@
-# DotnetBaseKit
+# DotnetBaseKit Tools
 
-DotnetBaseKit é um gerador de projetos e ecossistema de templates para criar aplicações .NET 8 com uma arquitetura em camadas inspirada na Clean Architecture.
+[:us: English Version](./README.md) 
+
+O DotnetBaseKit Tools é um gerador de projetos leve e um ecossistema de templates para criar aplicações .NET 8 com uma arquitetura em camadas inspirada em Clean Architecture / DDD.
 
 Este repositório contém:
 
-- `DotnetBaseKit.Cli` — ferramenta de linha de comando interativa que cria novas soluções a partir de um template
-- `DotnetBaseKit.Templates` — template reutilizável usado pela CLI para scaffoldar a aplicação gerada
+- `DotnetBaseKit.Cli` — ferramenta de linha de comando interativa que cria novas soluções a partir de um template.
+- `DotnetBaseKit.Templates` — template de projeto reutilizável utilizado pela CLI para gerar a estrutura inicial da aplicação.
 
-## Estrutura do projeto
+## Início rápido
+
+### 1. Instalação
+
+Instale a ferramenta global da CLI e o pacote de templates diretamente do [NuGet.org](https://www.nuget.org/):
+
+```bash
+dotnet tool install --global DotnetBaseKit.Cli
+```
+
+```bash
+dotnet new install DotnetBaseKit.Templates
+```
+
+**Observação:** se você já tiver uma versão anterior instalada, atualize os pacotes com:
+
+```bash
+dotnet tool update --global DotnetBaseKit.Cli
+dotnet new update
+```
+
+### 2. Utilização
+
+Execute o gerador a partir de qualquer terminal:
+
+```bash
+dotnet-basekit
+```
+
+ou
+
+```bash
+dotnet basekit
+```
+
+A CLI interativa solicitará as seguintes informações:
+
+- **Nome do projeto** (por exemplo, `MeuProjeto`).
+- **Provedor de banco de dados** (por exemplo, `SQL Server`, `PostgreSQL`, `MySQL` ou `MongoDB`).
+- **Projeto de testes unitários** (opcional: `y/n`, com `y` como padrão).
+
+Após a geração, acesse a pasta da nova solução e compile o projeto:
+
+```bash
+cd MyProject
+dotnet build
+```
+
+## Estrutura do repositório
 
 ```text
-DotnetBaseKit/
+dotnet-basekit-tools/
 ├── DotnetBaseKit.Cli/
 │   ├── Program.cs
 │   ├── Services/
@@ -21,63 +71,21 @@ DotnetBaseKit/
 │   ├── content/
 │   └── ...
 ├── .gitignore
-├── LICENSE
 └── README.md
 ```
 
 ## Objetivo principal
 
-O objetivo é ajudar desenvolvedores a criar rapidamente novas aplicações .NET com uma estrutura consistente, reduzindo boilerplate e padronizando:
+O objetivo é ajudar desenvolvedores a criar rapidamente novas aplicações .NET 8 com uma estrutura consistente, reduzindo o código repetitivo (*boilerplate*) e padronizando:
 
-- camada de API
-- camada de Application
-- camada de Domain
-- camada de Infrastructure
-- camada de Shared
-- projeto opcional de testes
-- configuração de banco de dados
+- **Camada de API** — endpoints, controllers e configuração do Swagger.
+- **Camada de aplicação** — casos de uso, DTOs e interfaces.
+- **Camada de domínio** — entidades, objetos de valor (*value objects*) e lógica de domínio.
+- **Camada de infraestrutura** — contexto do EF Core / MongoDB, repositórios e persistência.
+- **Camada compartilhada** — funcionalidades transversais (*cross-cutting concerns*) e utilitários.
+- **Projeto de testes opcional** — configuração inicial do xUnit.
 
-## Uso da CLI
-
-Instale a ferramenta localmente a partir da saída do projeto:
-
-```bash
-dotnet tool update --global --add-source ./DotnetBaseKit.Cli/bin/Release DotnetBaseKit.Cli
-```
-
-Depois execute:
-
-```bash
-dotnet-basekit
-```
-
-A CLI pergunta:
-
-- nome do projeto
-- tipo de banco
-- se deseja incluir testes
-
-Em seguida, instala o template e gera uma solução base para a arquitetura escolhida.
-
-## Observação importante sobre migrations
-
-A CLI cria a estrutura do projeto, mas não gera migrations de banco automaticamente. Você precisa criar essas migrations manualmente com os comandos do EF Core após a geração do projeto.
-
-Exemplo:
-
-```bash
-dotnet ef migrations add InitialCreate --project SeuProjeto.Infra --startup-project SeuProjeto.Api
-dotnet ef database update --project SeuProjeto.Infra --startup-project SeuProjeto.Api
-```
-
-## Documentação
-
-A documentação detalhada da CLI está disponível em:
-
-- [DotnetBaseKit.Cli/README.md](DotnetBaseKit.Cli/README.md)
-- [DotnetBaseKit.Cli/README.ptBr.md](DotnetBaseKit.Cli/README.ptBr.md)
-
-## Estrutura típica do projeto gerado
+## Estrutura típica da aplicação gerada
 
 ```text
 MeuProjeto/
@@ -91,6 +99,21 @@ MeuProjeto/
 └── README.md
 ```
 
-## Licença
+## Migrações de banco de dados
 
-Este projeto foi pensado para fluxos de desenvolvimento e scaffolding de projetos. Verifique a licença do repositório se você pretende utilizá-lo em produção ou distribuí-lo comercialmente.
+A CLI gera a estrutura da solução e configura as definições do provedor de banco de dados. No entanto, as migrações do Entity Framework Core precisam ser criadas manualmente após a geração do projeto:
+
+```bash
+# Adicionar a migração inicial
+dotnet ef migrations add InitialCreate --project MeuProjeto.Infra --startup-project MeuProjeto.Api
+
+# Atualizar o banco de dados
+dotnet ef database update --project MeuProjeto.Infra --startup-project MeuProjeto.Api
+```
+
+## Documentação
+
+Para obter informações detalhadas sobre a configuração da CLI e consultar a documentação em português, acesse:
+
+- [DotnetBaseKit.Cli/README.md](DotnetBaseKit.Cli/README.md)
+- [DotnetBaseKit.Cli/README.ptBr.md](DotnetBaseKit.Cli/README.ptBr.md)
